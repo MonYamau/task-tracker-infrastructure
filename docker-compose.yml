@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:18
-    container_name: task_tracker_postgres
+    container_name: task-tracker-postgres
     restart: always
     environment:
       POSTGRES_USER: ${DB_USER}
@@ -21,7 +21,7 @@ services:
 
   kafka:
     image: apache/kafka:4.3.1
-    container_name: task_tracker_kafka
+    container_name: task-tracker-kafka
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -35,10 +35,13 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+
     ports:
       - "29092:29092"
+
     volumes:
-    - kafka_volume:/var/lib/kafka/data
+      - kafka_volume:/tmp/kraft-combined-logs
 
   backend:
     image: task-tracker-backend:local
@@ -63,6 +66,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_TTL_MINUTES: ${JWT_TTL_MINUTES}
       INTERNAL_TOKEN: ${INTERNAL_TOKEN}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
 
   email-sender:
     image: task-tracker-email-sender:local
@@ -112,6 +116,18 @@ services:
       INTERNAL_TOKEN: ${INTERNAL_TOKEN}
       INTERNAL_URL: ${INTERNAL_URL}
       KAFKA_SERVER: ${KAFKA_SERVER}
+
+  frontend:
+    image: task-tracker-frontend:local
+    container_name: task-tracker-frontend
+    restart: unless-stopped
+
+    depends_on:
+      backend:
+        condition: service_started
+
+    ports:
+      - "80:80"
 
 volumes:
   postgres_volume:

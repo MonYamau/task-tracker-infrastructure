@@ -1,3 +1,5 @@
 .idea
 task-tracker-infrastructure.iml
 .env
+.env.local
+.env.server
