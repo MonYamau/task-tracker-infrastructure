@@ -21,7 +21,7 @@ services:
 
   kafka:
     image: apache/kafka:4.3.1
-    container_name: task_tracker_kafka
+    container_name: task-tracker-kafka
     restart: unless-stopped
 
     environment:
